@@ -2,10 +2,10 @@
   "name": "SDC",
   "version": "1.0.0",
   "scripts": {
-    "webpack": "webpack -w",
+    "webpack": "webpack -p",
     "initMongo": "mongo < DB/mongoScript/initialize.txt && mongoimport --db SDC --collection products --file DB/json/products.json --batchSize=100",
     "populate": "node DB/populate.js",
-    "start": "NODE_ENV='production' node server/start.js"
+    "start": "npm run webpack && npm run populate && npm run initMongo && NODE_ENV='production' node server/start.js"
   },
   "author": "Zen",
   "license": "ISC",

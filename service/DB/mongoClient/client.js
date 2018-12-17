@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const host = process.env.DATABASE_IP || '54.164.156.149'; 
+const host = process.env.DATABASE_IP || 'localhost'; 
 
 mongoose.connect(
   `mongodb://${host}/SDC`,

@@ -1,3 +1,3 @@
 module.exports = {
-  dataSize: 10000000
+  dataSize: 100000
 }

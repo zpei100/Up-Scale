@@ -1,4 +1,4 @@
 node_modules/
 *.csv
-/DB/json
+/DB/json/*
 */dist/*.js
