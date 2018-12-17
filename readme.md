@@ -10,13 +10,14 @@ At production, all data exist in the cloud. At development, we will use MongoDB 
 
 To run:
 
-cd into service
-npm install
-Note: This removes all documents inside 'products' collection) npm start
+- cd into service
+- npm install
+- Note: This removes all documents inside 'products' collection) 
+- npm start
 
-cd into proxy
-npm install
-npm start
+- cd into proxy
+- npm install
+- npm start
 
 Application is on: localhost:3000/buy/:productID  (product######)
 
