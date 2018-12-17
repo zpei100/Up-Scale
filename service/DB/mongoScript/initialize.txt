@@ -1,0 +1,2 @@
+use SDC
+db.getCollection('products').remove({})
