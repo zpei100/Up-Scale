@@ -17,7 +17,7 @@ module.exports = function(hosts, initialStates, htmls) {
   </head>
   
   <body>
-    <script>window.__initialState__ = ${JSON.stringify(initialStates.overviewsInitialState || {})}</script>
+    <script>window.__initialState__ = ${initialStates.overviewsInitialState}</script>
     
     <div id="app">
    

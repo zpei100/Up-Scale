@@ -3,7 +3,7 @@ const axios = require('axios');
 const template = require('./template');
 const compression = require('compression');
 
-// const client = redis.createClient({});
+const client = redis.createClient({});
 const proxy = require('fastify')({ logger: false });
 
 // const hosts = {
@@ -54,76 +54,91 @@ proxy.get('/buy/:productName', ({ params: { productName } }, res) => {
   var hosts = {};
   var initialStates = {};
 
-  const overviewsPromise = new Promise((resolve, reject) => {
-    const host = getHost('overviews');
-    axios
-      .get(`${host}/getProduct/${productName}`)
-      .then(({ data }) => {
-        htmls.overviewsHtml = data.html;
-        hosts.overviewsHost = host;
-        initialStates.overviewsInitialState = data.initialState;
-        resolve();
-      })
-      .catch(() => {
-        htmls.overviewsHtml = '';
-        hosts.overviewsHost = '';
-        initialStates.overviewsInitialState = {};
-      });
-  });
-
-  // const galleryPromise = new Promise((resolve, reject) => {
-  //   //expect results that come back to be an object with data attribute, with keys initialState and __NAME__html
-  //   const host = getHost('gallery');
-  //   axios.get(`${host}/galleryhtml/${productName.slice(7)}`).then(({data}) => {
-  //     // console.log('data came back from galley: ', data)
-  //     htmls.galleryHtml = data;
-  //     hosts.galleryHost = host;
-  //     initialStates.galleryInitialState = {};
-  //     resolve();
-  //   }).catch(() => {
-  //     htmls.galleryHtml = '';
-  //     hosts.galleryHost = '';
-  //     initialStates.galleryInitialState = {}
-  //   });
-  // });
-
-  //   const productInfoPromise = new Promise((resolve, reject) => {
-  //   //expect results that come back to be an object with data attribute, with keys initialState and __NAME__html
-  //   const host = getHost('productInfo');
-  //   axios.get(`${host}/productinfohtml/${productName.slice(7)}`).then(({data: {initialState, productinfohtml}}) => {
-     
-  //     htmls.productInfoHtml = productinfohtml;
-  //     hosts.productInfoHost = host;
-  //     initialStates.productInfoInitialState = initialState;
-  //     resolve()
-  //   }).catch(reject);
-  // });
-
-
-
-  // const reviewsPromise = new Promise((resolve, reject) => {
-  //   //expect results that come back to be an object with data attribute, with keys initialState and __NAME__html
-  //   const host = getHost('reviews');
-  //   axios.get(`${host}/buy1/${productName.slice(7)}`).then(({data: {initialState, html}}) => {
-  //     htmls.reviewsHtml = html;
-  //     hosts.reviewsHost = host;
-  //     initialStates.reviewsInitialState = initialState;
-  //     resolve();
-  //   }).catch(() => {
-  //     htmls.reviewsHtml = '';
-  //     hosts.reviewsHost = '';
-  //     initialStates.reviewsInitialState = {};
-  //   });
-  // });
-
-  // const allResponses = [galleryPromise, overviewsPromise, reviewsPromise, productInfoPromise];
-  const allResponses = [overviewsPromise]
-  Promise.all(allResponses)
-    .then(() => {
+  client.hgetall(productName, function(err, result) {
+    if (result) {
+      console.log('result came from cache');
+      htmls.overviewsHtml = result.html;
+      hosts.overviewsHost = result.host;
+      initialStates.overviewsInitialState = result.overviewsInitialState;
       const page = template(hosts, initialStates, htmls);
       res.header('Content-Type', 'text/html').send(page);
-    })
-    .catch(() => res.status(404));
+    } else {
+      console.log('Not cached');
+      const overviewsPromise = new Promise((resolve, reject) => {
+        const host = getHost('overviews');
+        axios
+          .get(`${host}/getProduct/${productName}`)
+          .then(({ data }) => {
+            htmls.overviewsHtml = data.html;
+            hosts.overviewsHost = host;
+            initialStates.overviewsInitialState = JSON.stringify(data.initialState);
+            
+            client.hmset(productName, 'host', host, 'overviewsInitialState', initialStates.overviewsInitialState, 'html', data.html);
+
+            resolve();
+          })
+          .catch(() => {
+            htmls.overviewsHtml = '';
+            hosts.overviewsHost = '';
+            initialStates.overviewsInitialState = {};
+          });
+      });
+    
+      // const galleryPromise = new Promise((resolve, reject) => {
+      //   //expect results that come back to be an object with data attribute, with keys initialState and __NAME__html
+      //   const host = getHost('gallery');
+      //   axios.get(`${host}/galleryhtml/${productName.slice(7)}`).then(({data}) => {
+      //     // console.log('data came back from galley: ', data)
+      //     htmls.galleryHtml = data;
+      //     hosts.galleryHost = host;
+      //     initialStates.galleryInitialState = {};
+      //     resolve();
+      //   }).catch(() => {
+      //     htmls.galleryHtml = '';
+      //     hosts.galleryHost = '';
+      //     initialStates.galleryInitialState = {}
+      //   });
+      // });
+    
+      //   const productInfoPromise = new Promise((resolve, reject) => {
+      //   //expect results that come back to be an object with data attribute, with keys initialState and __NAME__html
+      //   const host = getHost('productInfo');
+      //   axios.get(`${host}/productinfohtml/${productName.slice(7)}`).then(({data: {initialState, productinfohtml}}) => {
+         
+      //     htmls.productInfoHtml = productinfohtml;
+      //     hosts.productInfoHost = host;
+      //     initialStates.productInfoInitialState = initialState;
+      //     resolve()
+      //   }).catch(reject);
+      // });
+    
+    
+    
+      // const reviewsPromise = new Promise((resolve, reject) => {
+      //   //expect results that come back to be an object with data attribute, with keys initialState and __NAME__html
+      //   const host = getHost('reviews');
+      //   axios.get(`${host}/buy1/${productName.slice(7)}`).then(({data: {initialState, html}}) => {
+      //     htmls.reviewsHtml = html;
+      //     hosts.reviewsHost = host;
+      //     initialStates.reviewsInitialState = initialState;
+      //     resolve();
+      //   }).catch(() => {
+      //     htmls.reviewsHtml = '';
+      //     hosts.reviewsHost = '';
+      //     initialStates.reviewsInitialState = {};
+      //   });
+      // });
+    
+      // const allResponses = [galleryPromise, overviewsPromise, reviewsPromise, productInfoPromise];
+      const allResponses = [overviewsPromise]
+      Promise.all(allResponses)
+        .then(() => {
+          const page = template(hosts, initialStates, htmls);
+          res.header('Content-Type', 'text/html').send(page);
+        })
+        .catch(() => res.status(404));
+    }
+  })
 });
 
 proxy.listen(3000, '0.0.0.0', console.log);
