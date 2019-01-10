@@ -1,11 +1,8 @@
-import express from 'express';
 import bodyParser from 'body-parser';
 import path from 'path';
 import cors from 'cors';
 import compression from 'compression';
 import fastify from 'fastify';
-import fs from 'fs';
-import spdy from 'spdy';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -34,11 +31,11 @@ app.use(compression());
 // app.use(express.static(path.join(__dirname, '/../react-client/dist')));
 
 //mongo routes:
-app.get('/getProduct/:productName', mongoGetByProductName);
-app.post('/insertProduct', mongoInsertByProductName);
-app.delete('/deleteProduct', mongoDeleteProduct);
-app.post('/updateShipping', mongoUpdateShipping);
-app.post('/updateDescriptions', mongoUpdateDescriptions);
+app.get('/products/:productName', mongoGetByProductName);
+app.post('/products', mongoInsertByProductName);
+app.delete('/products', mongoDeleteProduct);
+app.put('/products', mongoUpdateShipping);
+app.put('/products', mongoUpdateDescriptions);
 
 app.get('/bundle.js', function(req, res) {
   res.sendFile('bundle.js');

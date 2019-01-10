@@ -67,7 +67,7 @@ proxy.get('/buy/:productName', ({ params: { productName } }, res) => {
       const overviewsPromise = new Promise((resolve, reject) => {
         const host = getHost('overviews');
         axios
-          .get(`${host}/getProduct/${productName}`)
+          .get(`${host}/product/${productName}`)
           .then(({ data }) => {
             htmls.overviewsHtml = data.html;
             hosts.overviewsHost = host;
